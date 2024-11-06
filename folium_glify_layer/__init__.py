@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 __version__ = "0.3.0"
 
+from branca.utilities import _camelify
 from folium.elements import JSCSSMixin
 from folium.map import Layer
 from jinja2 import Template
@@ -201,9 +202,8 @@ class GlifyLayer(JSCSSMixin, Layer):
                 };
 
             {%- endif %}
-            
-            
-            L.glify.layer(options).addTo({{ this._parent.get_name() }});          
+
+            var {{ this._camelified_name }}_{{ this._id }}=L.glify.layer(options).addTo({{ this._parent.get_name() }});
 
         {% endmacro %}
         """)
@@ -217,19 +217,20 @@ class GlifyLayer(JSCSSMixin, Layer):
          'https://unpkg.com/leaflet-glify-layer@0.0.6/dist/leaflet-glify-layer.js')
     ]
 
-    def __init__(self, feature_collections, glify_options={}, 
+    def __init__(self, feature_collections, glify_options=None, 
         init_scale_function=None, color_feature_function=None, 
-        popup=None, tooltip=None):
+        popup=None, tooltip=None, layer_name=None, overlay=False):
         
-        super(GlifyLayer, self).__init__()
+        super(GlifyLayer, self).__init__(name=layer_name, overlay=overlay)
         self._name = 'GlifyLayer'
+        self._camelified_name = _camelify(self._name)
   
         if feature_collections:
             self.feature_collections = feature_collections
         else:
             raise ValueError('feature_collections must not be None.')
         
-        self.glify_options = glify_options
+        self.glify_options = glify_options or {}
         self.color_feature_function = color_feature_function
         self.init_scale_function = init_scale_function
 
